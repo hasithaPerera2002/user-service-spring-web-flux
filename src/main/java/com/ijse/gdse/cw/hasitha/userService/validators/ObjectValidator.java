@@ -13,11 +13,11 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 @Component
-public class UserValidator {
+public class UserValidator<T> {
 private final ValidatorFactory validatorFactory= Validation.buildDefaultValidatorFactory();
 private final Validator validator=validatorFactory.getValidator();
 
-public void validate(UserDto userDto){
+public void validate(T object){
     Set<ConstraintViolation<UserDto>> constraintViolations = validator.validate(userDto);
     if(!constraintViolations.isEmpty()){
        var violations= constraintViolations.stream().
