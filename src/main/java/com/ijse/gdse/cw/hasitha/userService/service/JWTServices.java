@@ -1,9 +1,6 @@
 package com.ijse.gdse.cw.hasitha.userService.service;
 
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.JwtBuilder;
-import io.jsonwebtoken.JwtParser;
-import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import lombok.Setter;
 import org.springframework.stereotype.Service;
@@ -21,7 +18,7 @@ public class JWTServices {
     private final JwtParser jwtParser;
 
     public JWTServices() {
-        this.secretKey = Keys.hmacShaKeyFor("1234567890".getBytes());
+        this.secretKey = Keys.secretKeyFor(SignatureAlgorithm.HS256);
         this.jwtParser = Jwts.parserBuilder().setSigningKey(this.secretKey).build();
     }
 

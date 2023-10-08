@@ -1,6 +1,5 @@
 package com.ijse.gdse.cw.hasitha.userService.validators;
 
-import com.ijse.gdse.cw.hasitha.userService.dto.UserDto;
 import com.ijse.gdse.cw.hasitha.userService.exceptions.NotValidObjectException;
 
 import org.springframework.stereotype.Component;
@@ -13,12 +12,12 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 @Component
-public class UserValidator<T> {
+public class ObjectValidator<T> {
 private final ValidatorFactory validatorFactory= Validation.buildDefaultValidatorFactory();
 private final Validator validator=validatorFactory.getValidator();
 
 public void validate(T object){
-    Set<ConstraintViolation<UserDto>> constraintViolations = validator.validate(userDto);
+    Set<ConstraintViolation<T>> constraintViolations = validator.validate(object);
     if(!constraintViolations.isEmpty()){
        var violations= constraintViolations.stream().
                 map(ConstraintViolation::getMessage).

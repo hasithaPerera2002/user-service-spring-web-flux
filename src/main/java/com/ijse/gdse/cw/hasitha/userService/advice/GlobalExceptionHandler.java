@@ -8,8 +8,18 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-@ExceptionHandler(NotValidObjectException.class)
-    public ResponseEntity<?> handleException(NotValidObjectException e){
+    @ExceptionHandler(NotValidObjectException.class)
+    public ResponseEntity<?> handleException(NotValidObjectException e) {
         return ResponseEntity.badRequest().body(e.getViolations());
+    }
+
+    @ExceptionHandler(NullPointerException.class)
+    public ResponseEntity<?> handleException(NullPointerException e) {
+        return ResponseEntity.badRequest().body(e.getMessage());
+    }
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<?> handleException(IllegalArgumentException e) {
+        return ResponseEntity.badRequest().body(e.getMessage());
     }
 }

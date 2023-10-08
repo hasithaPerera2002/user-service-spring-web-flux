@@ -43,7 +43,7 @@ public class User implements UserDetails {
 
     @Positive(message = "Age should be a positive integer")
     @NotNull(message = "Age cannot be null")
-    @Min(value = 18, message = "Age should be greater than or equal to 18")
+    @   Min(value = 18, message = "Age should be greater than or equal to 18")
     @Max(value = 80, message = "Age should be less than or equal to 80")
     private Integer age;
 
@@ -67,10 +67,8 @@ public class User implements UserDetails {
     @Size(max = 255, message = "Remark should not exceed 255 characters")
     private String remark;
 
-    @NotNull(message = "Front image of NIC cannot be null")
     private Binary frontImageOfNIC;
 
-    @NotNull(message = "Back image of NIC cannot be null")
     private Binary backImageOfNIC;
 
     @Size(max = 10, message = "NIC number should not exceed 10 characters")
@@ -78,7 +76,7 @@ public class User implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of(new SimpleGrantedAuthority(role.toString()));
+        return role.getAuthorities();
     }
 
     @Override

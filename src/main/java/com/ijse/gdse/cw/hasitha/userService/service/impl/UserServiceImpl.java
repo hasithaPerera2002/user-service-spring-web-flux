@@ -1,17 +1,13 @@
 package com.ijse.gdse.cw.hasitha.userService.service.impl;
-
 import com.ijse.gdse.cw.hasitha.userService.dto.UserDto;
 import com.ijse.gdse.cw.hasitha.userService.entity.User;
 import com.ijse.gdse.cw.hasitha.userService.repo.UserRepo;
 import com.ijse.gdse.cw.hasitha.userService.service.UserService;
-import com.ijse.gdse.cw.hasitha.userService.validators.UserValidator;
+import com.ijse.gdse.cw.hasitha.userService.validators.ObjectValidator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-
 import org.modelmapper.ModelMapper;
-import org.reactivestreams.Publisher;
 import org.springframework.beans.factory.annotation.Autowired;
-
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -24,20 +20,20 @@ import reactor.core.publisher.Mono;
 public class UserServiceImpl implements UserService {
 
     @Autowired
-    private UserRepo userRepo;
+    private final UserRepo userRepo;
 
     @Autowired
-    private ModelMapper modelMapper;
+    private final ModelMapper modelMapper;
 
     @Autowired
-    private final UserValidator userValidator;
+    private final ObjectValidator <UserDto> objectValidator;
 
     @Autowired
-    private  PasswordEncoder passwordEncoder;
+    private final PasswordEncoder passwordEncoder;
     @Override
     public Mono<UserDto> saveUser(UserDto userDto) {
         log.info("user dto : {}",userDto.toString());
-        userValidator.validate(userDto);
+        objectValidator.validate(userDto);
         //password encryption
         userDto.setPassword(passwordEncoder.encode(userDto.getPassword()));
         return userRepo.insert(modelMapper.map(userDto, User.class))

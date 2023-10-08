@@ -2,20 +2,23 @@ package com.ijse.gdse.cw.hasitha.userService.dto;
 
 import com.ijse.gdse.cw.hasitha.userService.util.enums.Gender;
 import com.ijse.gdse.cw.hasitha.userService.util.enums.RoleType;
-import javax.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.bson.types.Binary;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+
+import javax.validation.constraints.*;
+import java.util.Collection;
 
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
 @Builder
-public class UserDto {
-    @NotNull
-    @NotBlank(message = "User ID cannot be blank")
+public class UserDto implements UserDetails {
+
     private String userID;
 
     @NotBlank(message = "Username cannot be blank")
@@ -56,12 +59,44 @@ public class UserDto {
     @Size(max = 255, message = "Remark should not exceed 255 characters")
     private String remark;
 
-    @NotNull(message = "Front image of NIC cannot be null")
+
     private Binary frontImageOfNIC;
 
-    @NotNull(message = "Back image of NIC cannot be null")
+
     private Binary backImageOfNIC;
 
-    @Size(max = 10, message = "NIC number should not exceed 10 characters")
+    @Size(max = 10, min = 10, message = "NIC number should not exceed 10 characters")
+    @NotNull(message = "NIC number cannot be null")
     private String nicNumber;
+
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return role.getAuthorities();
+    }
+
+    @Override
+    public String getPassword() {
+        return password;
+    }
+
+    @Override
+    public boolean isAccountNonExpired() {
+
+        return true;
+    }
+
+    @Override
+    public boolean isAccountNonLocked() {
+        return true;
+    }
+
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return true;
+    }
 }
