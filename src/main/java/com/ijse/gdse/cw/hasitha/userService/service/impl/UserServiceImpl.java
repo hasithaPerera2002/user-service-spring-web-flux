@@ -7,6 +7,7 @@ import com.ijse.gdse.cw.hasitha.userService.validators.ObjectValidator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
+import org.reactivestreams.Publisher;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -47,22 +48,45 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public Mono<UserDto> getUser(String id) {
-        return null;
+        Mono<Boolean> userNotFound = userRepo.existsById(id).switchIfEmpty(Mono.error(new IllegalArgumentException("User not found")));
+        return userRepo.findById(id)
+                .flatMap(user -> {
+                    UserDto userDto = modelMapper.map(user, UserDto.class);
+                    return Mono.just(userDto);
+                });
     }
 
     @Override
     public Mono<UserDto> updateUser(UserDto userDto) {
-        return null;
+        Mono<User> userMono = userRepo.findById(userDto.getUserID())
+                .switchIfEmpty(Mono.error(new NullPointerException("User not found")));
+        return userMono.flatMap(user -> {
+            user.setUsername(userDto.getUsername());
+            user.setContactNumber(userDto.getContactNumber());
+            user.setAddress(userDto.getAddress());
+            user.setNicNumber(userDto.getNicNumber());
+            user.setGender(userDto.getGender());
+            user.setRole(userDto.getRole());
+            user.setProfilePicture(userDto.getProfilePicture());
+            return userRepo.save(user);
+        }).flatMap(savedUser -> {
+            UserDto savedUserDto = modelMapper.map(savedUser, UserDto.class);
+            return Mono.just(savedUserDto);
+        });
+
     }
 
     @Override
     public void deleteUser(String id) {
-
+            userRepo.deleteById(id).onErrorResume(error -> Mono.error(new IllegalArgumentException(error.getMessage())));
     }
 
     @Override
     public Flux<UserDto> getAllUsers() {
-        return null;
+        return userRepo
+                .findAll()
+                .map(user -> modelMapper.map(user, UserDto.class));
+
     }
 
     @Override
@@ -74,8 +98,13 @@ public class UserServiceImpl implements UserService {
         });
     }
 
+
     @Override
     public Mono<UserDetails> findByUsername(String username) {
-        return null;
+        return userRepo.findByUsername(username)
+                .flatMap(user -> {
+                    UserDto userDto = modelMapper.map(user, UserDto.class);
+                    return Mono.just(userDto);
+                });
     }
 }

@@ -11,6 +11,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.server.SecurityWebFilterChain;
 import org.springframework.security.web.server.authentication.AuthenticationWebFilter;
 
+import static com.ijse.gdse.cw.hasitha.userService.util.enums.RoleType.ADMIN_USER_SERVICE;
+import static com.ijse.gdse.cw.hasitha.userService.util.enums.RoleType.ADMIN_VEHICLE_SERVICE;
+
 @EnableWebFluxSecurity
 @Configuration
 public class AuthFilter {
@@ -28,9 +31,9 @@ public class AuthFilter {
         AuthenticationWebFilter authenticationFilter = new AuthenticationWebFilter(authManager);
         authenticationFilter.setServerAuthenticationConverter(authConverter);
         return http.authorizeExchange(auth -> {
-            auth.pathMatchers("/api/v1/user/login").permitAll()
+            auth.pathMatchers("/api/v1/user/**").permitAll()
                     .pathMatchers(HttpMethod.POST,"/api/v1/user/register").permitAll()
-                    .pathMatchers("/api/v1/admin").hasAnyRole("ADMIN_USER_SERVICE", "ADMIN_VEHICLE_SERVICE")
+                    .pathMatchers(HttpMethod.POST,"/api/v1/admin/login").hasAnyRole(ADMIN_USER_SERVICE.name(), ADMIN_VEHICLE_SERVICE.name())
                     .anyExchange().authenticated();
 
         })

@@ -5,6 +5,7 @@ import com.ijse.gdse.cw.hasitha.userService.dto.UserDto;
 import com.ijse.gdse.cw.hasitha.userService.service.JWTServices;
 import com.ijse.gdse.cw.hasitha.userService.service.UserService;
 import com.ijse.gdse.cw.hasitha.userService.util.ResponseUtil;
+import com.ijse.gdse.cw.hasitha.userService.util.enums.RoleType;
 import com.ijse.gdse.cw.hasitha.userService.validators.ObjectValidator;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,6 +14,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
+
+import static com.ijse.gdse.cw.hasitha.userService.util.enums.RoleType.*;
 
 @RestController
 @RequestMapping("/api/v1/user")
@@ -26,6 +29,7 @@ public class UserController {
     private final ObjectValidator<UserDto> userValidator;
     private final JWTServices jwtServices;
 
+    //TODO : add validations to dto and entity----------------------------------------------------------------------
     @Autowired
     public UserController(PasswordEncoder passwordEncoder, UserService userService, ObjectValidator<RequestLoginDto> objectValidator, ObjectValidator<UserDto> userValidator, JWTServices jwtServices) {
         this.passwordEncoder = passwordEncoder;
@@ -36,7 +40,7 @@ public class UserController {
     }
 
 
-    @PostMapping("/register")
+    @PostMapping(value = "/register",produces = "application/json",consumes = "application/json")
     public Mono<ResponseEntity<ResponseUtil>> saveUser(
             @RequestBody UserDto userDto
     ) {
@@ -49,12 +53,7 @@ public class UserController {
 
     }
 
-    @GetMapping
-    public String getUser() {
-        return "hiiiiiiiiiii";
-    }
-
-    @PostMapping("/login")
+    @PostMapping(value = "/login", consumes = "application/json", produces = "application/json")
     public Mono<ResponseEntity<ResponseUtil>> login(@RequestBody RequestLoginDto requestLoginDto) {
         log.info("requestLoginDto : {}", requestLoginDto.getEmail());
         objectValidator.validate(requestLoginDto);
@@ -69,10 +68,12 @@ public class UserController {
         return userDto.flatMap(userDetails -> {
             if (userDetails.getUserID() != null) {
                 if (passwordEncoder.matches(requestLoginDto.getPassword(), userDetails.getPassword())) {
+
                     return Mono.just(
                             ResponseEntity.ok().body(
                                     new ResponseUtil(200, "Login success",
-                                            jwtServices.generate(userDetails.getEmail())
+
+                                            jwtServices.generate(userDetails.getEmail(),isAdminRole(userDetails.getRole()))
                                     )
                             )
                     );
@@ -89,12 +90,27 @@ public class UserController {
         });
 
     }
-
-    @GetMapping("/auth")
-    public Mono<ResponseEntity<ResponseUtil>> auth() {
-        return Mono
-                .just(ResponseEntity
-                        .ok()
-                        .body(new ResponseUtil(200, "Login success", "")));
+    private boolean isAdminRole(RoleType role) {
+        return role == RoleType.ADMIN_USER_SERVICE ||
+                role == RoleType.ADMIN_GUIDE_SERVICE ||
+                role == RoleType.ADMIN_VEHICLE_SERVICE ||
+                role == RoleType.ADMIN_HOTEL_SERVICE ||
+                role == RoleType.ADMIN_TRAVEL_SERVICE;
     }
+
+    @PutMapping(value = "/update" ,consumes = "application/json",produces = "application/json")
+    public Mono<ResponseEntity<ResponseUtil>> updateUser(
+            @RequestBody UserDto userDto
+    ) {
+        userValidator.validate(userDto);
+        log.info("userDto : {}", userDto);
+        return userService.updateUser(userDto).flatMap(user ->
+                        Mono.just(ResponseEntity.ok().body(
+                                new ResponseUtil(200, "User updated successfully", user))))
+                .onErrorResume(error -> Mono.error(new IllegalArgumentException(error.getMessage())));
+
+    }
+
+
+
 }

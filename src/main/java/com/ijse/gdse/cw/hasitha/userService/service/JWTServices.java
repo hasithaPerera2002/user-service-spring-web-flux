@@ -22,12 +22,14 @@ public class JWTServices {
         this.jwtParser = Jwts.parserBuilder().setSigningKey(this.secretKey).build();
     }
 
-    public String generate(String email){
+    public String generate(String email,boolean isAdmin){
 
         JwtBuilder jwtBuilder = Jwts.builder()
                 .setSubject(email)
-                .setIssuedAt(Date.from(Instant.now()))
+                .setIssuedAt(Date.from(Instant.now())).
+                claim("admin",isAdmin)
                 .setExpiration(Date.from(Instant.now().plus(15, ChronoUnit.MINUTES)))
+
                 .signWith(this.secretKey);
         return jwtBuilder.compact();
     }
@@ -39,6 +41,7 @@ public class JWTServices {
     public boolean validate(String token,String email){
     Claims claims = this.jwtParser.parseClaimsJws(token).getBody();
         boolean unexpired = claims.getExpiration().after(Date.from(Instant.now()));
-        return unexpired && Objects.equals(email, claims.getSubject());
+        boolean isAdmin = claims.get("admin", Boolean.class);
+        return unexpired && Objects.equals(email, claims.getSubject())&& isAdmin;
     }
 }
