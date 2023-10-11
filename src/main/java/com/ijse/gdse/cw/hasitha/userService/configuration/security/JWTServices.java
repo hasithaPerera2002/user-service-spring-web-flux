@@ -1,5 +1,6 @@
-package com.ijse.gdse.cw.hasitha.userService.service;
+package com.ijse.gdse.cw.hasitha.userService.configuration.security;
 
+import com.ijse.gdse.cw.hasitha.userService.util.enums.RoleType;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import lombok.Setter;
@@ -22,16 +23,16 @@ public class JWTServices {
         this.jwtParser = Jwts.parserBuilder().setSigningKey(this.secretKey).build();
     }
 
-    public String generate(String email,boolean isAdmin){
+    public String generate(String email, RoleType role){
 
-        JwtBuilder jwtBuilder = Jwts.builder()
+        return Jwts.builder()
                 .setSubject(email)
-                .setIssuedAt(Date.from(Instant.now())).
-                claim("admin",isAdmin)
+                .setIssuedAt(Date.from(Instant.now()))
+                .claim("authorities",role)
                 .setExpiration(Date.from(Instant.now().plus(15, ChronoUnit.MINUTES)))
+                .signWith(this.secretKey)
+                .compact();
 
-                .signWith(this.secretKey);
-        return jwtBuilder.compact();
     }
     public String getEmail(String token){
         Claims claims = this.jwtParser.parseClaimsJws(token).getBody();
@@ -41,7 +42,7 @@ public class JWTServices {
     public boolean validate(String token,String email){
     Claims claims = this.jwtParser.parseClaimsJws(token).getBody();
         boolean unexpired = claims.getExpiration().after(Date.from(Instant.now()));
-        boolean isAdmin = claims.get("admin", Boolean.class);
-        return unexpired && Objects.equals(email, claims.getSubject())&& isAdmin;
+        return unexpired && Objects.equals(email, claims.getSubject());
     }
+
 }

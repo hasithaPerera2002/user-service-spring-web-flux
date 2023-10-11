@@ -2,7 +2,7 @@ package com.ijse.gdse.cw.hasitha.userService.api;
 
 import com.ijse.gdse.cw.hasitha.userService.dto.RequestLoginDto;
 import com.ijse.gdse.cw.hasitha.userService.dto.UserDto;
-import com.ijse.gdse.cw.hasitha.userService.service.JWTServices;
+import com.ijse.gdse.cw.hasitha.userService.configuration.security.JWTServices;
 import com.ijse.gdse.cw.hasitha.userService.service.UserService;
 import com.ijse.gdse.cw.hasitha.userService.util.ResponseUtil;
 import com.ijse.gdse.cw.hasitha.userService.util.enums.RoleType;
@@ -14,8 +14,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
-
-import static com.ijse.gdse.cw.hasitha.userService.util.enums.RoleType.*;
 
 @RestController
 @RequestMapping("/api/v1/user")
@@ -73,7 +71,7 @@ public class UserController {
                             ResponseEntity.ok().body(
                                     new ResponseUtil(200, "Login success",
 
-                                            jwtServices.generate(userDetails.getEmail(),isAdminRole(userDetails.getRole()))
+                                            jwtServices.generate(userDetails.getEmail(),userDetails.getRole())
                                     )
                             )
                     );

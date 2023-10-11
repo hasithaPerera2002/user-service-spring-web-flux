@@ -2,7 +2,7 @@ package com.ijse.gdse.cw.hasitha.userService.api;
 
 import com.ijse.gdse.cw.hasitha.userService.dto.RequestLoginDto;
 import com.ijse.gdse.cw.hasitha.userService.dto.UserDto;
-import com.ijse.gdse.cw.hasitha.userService.service.JWTServices;
+import com.ijse.gdse.cw.hasitha.userService.configuration.security.JWTServices;
 import com.ijse.gdse.cw.hasitha.userService.service.UserService;
 import com.ijse.gdse.cw.hasitha.userService.util.ResponseUtil;
 import com.ijse.gdse.cw.hasitha.userService.util.enums.RoleType;
@@ -11,6 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
@@ -26,6 +27,7 @@ import reactor.core.publisher.Mono;
 @RestController
 @Slf4j
 @RequestMapping("/api/v1/admin")
+@PreAuthorize("hasRole('ADMIN_USER_SERVICE')")
 public class AdminController {
     private final PasswordEncoder passwordEncoder;
     private final UserService userService;
@@ -60,7 +62,7 @@ public class AdminController {
                     return Mono.just(
                             ResponseEntity.ok().body(
                                     new ResponseUtil(200, "Login success",
-                                            jwtServices.generate(userDetails.getEmail(),isAdminRole(userDetails.getRole()))
+                                            jwtServices.generate(userDetails.getEmail(),userDetails.getRole())
                                     )
                             )
                     );
@@ -97,8 +99,8 @@ public class AdminController {
                                 new ResponseUtil(200, "User updated successfully", user))))
                 .onErrorResume(error -> Mono.error(new IllegalArgumentException(error.getMessage())));
     }
-    @DeleteMapping(value = "/deleteUser/{id}", consumes = "application/json")
-    public Mono<ResponseEntity<ResponseUtil>> deleteUser(@PathVariable String id) {
+    @DeleteMapping(value = "/deleteUser", consumes = "application/json")
+    public Mono<ResponseEntity<ResponseUtil>> deleteUser(@RequestParam String id) {
         userService.deleteUser(id);
         return Mono.just(ResponseEntity.ok().body(
                 new ResponseUtil(200, "User deleted successfully", "")))
